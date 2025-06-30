@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime
 
 # List of tickers to analyze
-TICKERS = ['BALD-B.ST']
+TICKERS = ['BALD-B.ST','SAGA-B.ST', 'CORE-B.ST', 'SBB-B.ST']
 
 # DCF Assumptions
 
@@ -13,8 +13,8 @@ TICKERS = ['BALD-B.ST']
 
 # ----- Main -----
 def main():
-    get_financial_data(TICKERS)
-
+    df = get_financial_data(TICKERS)
+    print(df)
 
 
 if __name__ == "__main__":

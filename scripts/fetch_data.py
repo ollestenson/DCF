@@ -7,20 +7,16 @@ def get_financial_data(tickers):
     for ticker in tickers:
         try:
             stock = yf.Ticker(ticker)
-            cash_flow = stock.cashflow
+            cash_flow = stock.cashflow.iloc[:,:-1]
             if not cash_flow.empty and 'Free Cash Flow' in cash_flow.index:
-                latest_date = cash_flow.columns[0]
-                free_cash_flow = cash_flow.loc['Free Cash Flow', latest_date]
-                data.append({'ticker': ticker, 'date': latest_date, 'free_cash_flow': free_cash_flow})
+                fcf = cash_flow.loc['Free Cash Flow']
+                for date, value in fcf.items():
+                    data.append({'ticker': ticker, 'date': date, 'fcf': value})
             else:
-                data.append({'ticker': ticker, 'date': None, 'free_cash_flow': None})
+                data.append({'ticker': ticker, 'date': None, 'fcf': None})
         except Exception as e:
-            data.append({'ticker': ticker, 'date': None, 'free_cash_flow': None})
+            data.append({'ticker': ticker, 'date': None, 'fcf': None})
     df = pd.DataFrame(data)
+    df.set_index(['ticker', 'date'], inplace=True)
 
-    df.index.names = ['date', 'ticker']
-
-    df.columns = df.columns.str.lower()
-
-    print(df)
     return df
