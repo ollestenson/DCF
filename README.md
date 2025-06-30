@@ -1,5 +1,7 @@
 # DCF
-A simple DCF model created with Python and SQL
+A simple DCF model created with Python and SQL. 
+
+Intended for learning and not practical use.
 
 
 ## Installation
