@@ -22,11 +22,12 @@ def main():
 
     # init_db(DB_PATH)  # Initialize the database (if needed)
     df = get_financial_data(TICKERS)
-
-    # dcf_df = run_dcf(df, GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH, shares_outstanding=amount of company shares (get from fetch_data.py?))
+    print("Financial data fetched successfully.")
+    print(df)
+    dcf_df = run_dcf(df, GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH)
 
     # insert_data(dcf_df, db)  # Insert data into the database
-    print(df)
+
 
 
 if __name__ == "__main__":
