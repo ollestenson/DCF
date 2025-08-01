@@ -7,6 +7,7 @@ from datetime import datetime
 
 # List of tickers to analyze
 TICKERS = ['BALD-B.ST','SAGA-B.ST', 'CORE-B.ST', 'SBB-B.ST']
+TICKER = 'BALD-B.ST'  # Example ticker
 
 # DCF Assumptions (For simplicity, these are hardcoded)
 GROWTH_RATE = 0.05          # 5% annual growth
@@ -23,8 +24,10 @@ def main():
     # init_db(DB_PATH)  # Initialize the database (if needed)
     df = get_financial_data(TICKERS)
     print("Financial data fetched successfully.")
-    print(df)
-    dcf_df = run_dcf(df, GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH)
+    #print(df)
+
+    print("processing DCF for ticker:", TICKER)
+    dcf_df, share_price = run_dcf(df.loc[TICKER], GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH)
 
     # insert_data(dcf_df, db)  # Insert data into the database
 
