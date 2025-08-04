@@ -21,9 +21,7 @@ def run_dcf(df, growth_rate, discount_rate, terminal_growth, years=5) -> (pd.Dat
     dcf_df.loc[dcf_df.index[-1], 'projected_tv'] = terminal_value
     # Calculate Discounted Terminal Value (DTV)
     dcf_df.loc[dcf_df.index[-1], 'discounted_tv'] = terminal_value / ((1 + discount_rate) ** years)
-    print(dcf_df)
     # Calculate Total DCF and Share Price
     total_dcf = dcf_df['discounted_fcf'].sum() + dcf_df.iloc[-1]['discounted_tv']
     share_price = total_dcf / df.iloc[0]['shares']
-    print(share_price)
     return dcf_df, share_price

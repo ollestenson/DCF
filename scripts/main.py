@@ -19,6 +19,9 @@ DB_PATH = 'db/dcf.db'
 
 # ----- Main -----
 def main():
+
+    test()
+
     print(f"Starting DCF analysis at {datetime.now()}")
 
     # init_db(DB_PATH)  # Initialize the database (if needed)
@@ -28,10 +31,22 @@ def main():
 
     print("processing DCF for ticker:", TICKER)
     dcf_df, share_price = run_dcf(df.loc[TICKER], GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH)
-
+    print(dcf_df)
+    print(share_price)
     # insert_data(dcf_df, db)  # Insert data into the database
 
 
+def test():
+    """
+    Test function to verify program without running the full DCF analysis.
+    """
+    print("Running test function...")
+    df = get_financial_data([TICKER])
+    print("Test data fetched successfully.")
+    print(df)
+
+    print("Exiting test function...")
+    exit()
 
 if __name__ == "__main__":
     main()
