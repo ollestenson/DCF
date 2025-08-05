@@ -28,10 +28,24 @@ def get_financial_data(tickers, fields=None):
         fields = fields_to_fetch
 
     ticker = tickers[0]
-    stock = yf.Ticker(ticker)
-    info = stock.info
-    print(info)
 
+    data = []
+
+    for ticker in tickers:
+            stock = yf.Ticker(ticker)
+            for field, subdicts in fields.items():
+                if field == 'info':
+                    info = stock.info
+                    for subfield, alias in subdicts.items():
+                        value = info.get(subfield, None)
+                        data.append({'ticker': ticker, 'field': alias, 'value': value})
+                else:
+                    continue
+
+    df = pd.DataFrame(data)
+    #df.set_index(['ticker', 'year'], inplace=True)
+
+    print(df)
     #df_dcf = get_fcf(tickers)
     #df_shares = get_shares_outstanding(tickers)
 
