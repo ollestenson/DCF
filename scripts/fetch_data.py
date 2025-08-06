@@ -4,7 +4,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 
-# Fetches the config + share_price at year end date
+# Fetches the config + share_price at fiscal date
 fetch_config = {
     'cashflow': {
         'Free Cash Flow': 'fcf'
