@@ -41,7 +41,7 @@ def test():
     Test function to verify program without running the full DCF analysis.
     """
     print("Running test function...")
-    df = get_financial_data([TICKER])
+    df = get_financial_data(TICKERS)
     print("Test data fetched successfully.")
     print(df)
 

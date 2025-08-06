@@ -89,7 +89,7 @@ def get_financial_data(tickers, config=None):
 
     df = pd.DataFrame(data)
     df.set_index(['ticker', 'year'], inplace=True)
-    df = df.sort_index(level=1, ascending=False)
+    df = df.sort_index(level=[0, 1], ascending=[True, False])
     print(df)
     return df
 
