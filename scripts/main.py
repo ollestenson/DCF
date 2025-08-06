@@ -41,10 +41,12 @@ def test():
     Test function to verify program without running the full DCF analysis.
     """
     print("Running test function...")
-    df = get_financial_data(TICKERS)
+    #df = get_financial_data(TICKERS)
+    #df.to_csv(r"..\data\data.csv")
+    df = pd.read_csv(r"..\data\data.csv", index_col=['ticker', 'year'])
     print("Test data fetched successfully.")
-    print(df)
 
+    run_dcf(df.loc['BALD-B.ST'], GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH)
     print("Exiting test function...")
     exit()
 

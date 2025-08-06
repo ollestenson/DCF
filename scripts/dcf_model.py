@@ -16,12 +16,16 @@ def run_dcf(df, growth_rate, discount_rate, terminal_growth, years=5) -> (pd.Dat
     dcf_df['projected_fcf'] = [initial_fcf * (1 + growth_rate)**i for i in range(1, years + 1)]
     # Calculate Discounted Free Cash Flows (DCF)
     dcf_df['discounted_fcf'] = [projected_fcf / (1 + discount_rate)**i for i, projected_fcf in enumerate(dcf_df['projected_fcf'], start=1)]
-    # Caculate Terminal Value (TV)
+    # Calculate Terminal Value (TV)
     terminal_value = dcf_df['projected_fcf'].iloc[-1] * (1 + terminal_growth) / (discount_rate - terminal_growth)
     dcf_df.loc[dcf_df.index[-1], 'projected_tv'] = terminal_value
     # Calculate Discounted Terminal Value (DTV)
     dcf_df.loc[dcf_df.index[-1], 'discounted_tv'] = terminal_value / ((1 + discount_rate) ** years)
     # Calculate Total DCF and Share Price
     total_dcf = dcf_df['discounted_fcf'].sum() + dcf_df.iloc[-1]['discounted_tv']
-    share_price = total_dcf / df.iloc[0]['shares']
+    share_price = total_dcf / df.iloc[0]['shares_outstanding']
+    print(share_price)
     return dcf_df, share_price
+
+def wacc():
+    return
