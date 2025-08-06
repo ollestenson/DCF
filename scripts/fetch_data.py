@@ -1,7 +1,11 @@
+from datetime import datetime, timedelta
+
 import yfinance as yf
 import pandas as pd
+import numpy as np
 
-fields_to_fetch = {
+# Fetches the config + share_price at year end date
+fetch_config = {
     'cashflow': {
         'Free Cash Flow': 'fcf'
     },
@@ -19,104 +23,114 @@ fields_to_fetch = {
         'impliedSharesOutstanding': 'shares_outstanding',
         'marketCap': 'market_cap',
         'beta': 'beta'
+    },
+    'custom': {
+        'share_price': 'share_price'
     }
+
 }
 
-def get_financial_data(tickers, fields=None):
+def get_financial_data(tickers, config=None):
 
-    if fields is None:
-        fields = fields_to_fetch
-
-    ticker = tickers[0]
+    if config is None:
+        config = fetch_config
 
     data = []
 
+
     for ticker in tickers:
-            stock = yf.Ticker(ticker)
-            for field, subdicts in fields.items():
-                if field == 'info':
-                    info = stock.info
-                    for subfield, alias in subdicts.items():
-                        value = info.get(subfield, None)
-                        data.append({'ticker': ticker, 'field': alias, 'value': value})
+        stock = yf.Ticker(ticker)
+
+        category_cache = {}
+        for category in config.keys():
+            if category == 'info':
+                category_cache['info'] = stock.info
+            else:
+                category_cache[category] = getattr(stock, category, pd.DataFrame())
+
+        years_seen, fiscal_date_by_year = get_fiscal_dates_and_years(category_cache)
+
+        if not years_seen:
+            years_seen = {None}
+        for year in years_seen:
+            row = {'ticker':ticker, 'year': year}
+            for category, fields in config.items():
+                if category == 'info':
+                    info = category_cache['info']
+                    for yf_field, col_name in fields.items():
+                        row[col_name] = info.get(yf_field)
+
+                elif category == 'custom':
+                    for field_key, col_name in fields.items():
+                        if field_key == 'share_price' and year is not None:
+                            fiscal_date = fiscal_date_by_year.get(year)
+                            row[col_name] = get_price_on_fiscal_date(stock, fiscal_date)
+                        else:
+                            row[col_name] = None
+
                 else:
-                    continue
+                    df_cat = category_cache.get(category, pd.DataFrame())
+                    if df_cat.empty:
+                        for col_name in fields.values():
+                            row[col_name] = None
+                        continue
+                    for yf_field, col_name in fields.items():
+                        if yf_field in df_cat.index:
+                            value = None
+                            for col_date, val in df_cat.loc[yf_field].items():
+                                if year == pd.to_datetime(col_date).year:
+                                    value = val
+                                    break
+                            row[col_name] = value
+                        else:
+                            row[col_name] = None
+            data.append(row)
+
 
     df = pd.DataFrame(data)
-    #df.set_index(['ticker', 'year'], inplace=True)
-
+    df.set_index(['ticker', 'year'], inplace=True)
+    df = df.sort_index(level=1, ascending=False)
     print(df)
-    #df_dcf = get_fcf(tickers)
-    #df_shares = get_shares_outstanding(tickers)
-
-    #df = df_dcf.join(df_shares)
-    #df.index = df.index.set_levels(df.index.levels[1].year, level=1)
-    #return df
-
-
-def get_fcf(tickers):
-    """
-    Fetch the Free Cash Flow (FCF) for a specific ticker.
-    """
-    data = []
-    for ticker in tickers:
-        try:
-            stock = yf.Ticker(ticker)
-            cash_flow = stock.cashflow.iloc[:,:-1]
-            if not cash_flow.empty and 'Free Cash Flow' in cash_flow.index:
-                fcf = cash_flow.loc['Free Cash Flow']
-                for date, value in fcf.items():
-                    data.append({'ticker': ticker, 'year': date, 'fcf': value})
-            else:
-                data.append({'ticker': ticker, 'year': None, 'fcf': None})
-        except Exception as e:
-            data.append({'ticker': ticker, 'year': None, 'fcf': None})
-    df = pd.DataFrame(data)
-    df.set_index(['ticker', 'year'], inplace=True)
-
     return df
 
-def get_shares_outstanding(tickers):
-    """
-    Fetch the shares outstanding for a specific ticker.
-    """
-    data = []
-    for ticker in tickers:
-        try:
-            stock = yf.Ticker(ticker)
-            balance_sheet = stock.balancesheet.iloc[:, :-1]
-            if not balance_sheet.empty and 'Ordinary Shares Number' in balance_sheet.index:
-                shares = balance_sheet.loc['Ordinary Shares Number']
-                for date, value in shares.items():
-                    data.append({'ticker': ticker, 'year': date, 'shares': value})
-            else:
-                data.append({'ticker': ticker, 'year': None, 'shares': None})
-        except Exception as e:
-            data.append({'ticker': ticker, 'year': None, 'shares': None})
-    df = pd.DataFrame(data)
-    df.set_index(['ticker', 'year'], inplace=True)
 
-    return df
+def get_price_on_fiscal_date(stock, fiscal_date):
+    target_date = pd.to_datetime(fiscal_date).to_pydatetime()
+    start = target_date - timedelta(days=5)
+    end = target_date + timedelta(days=5)
 
-def get_share_price(tickers):
-    """
-    Fetch the share price for a specific ticker.
-    """
-    data = []
-    for ticker in tickers:
-        try:
-            stock = yf.Ticker(ticker)
-            earning_dates = stock.earnings_dates
-            print(earning_dates)
-            if not earning_dates.empty and 'Ordinary Shares Number' in earning_dates.index:
-                share_price = earning_dates.loc['Ordinary Shares Number']
-                for date, value in share_price.items():
-                    data.append({'ticker': ticker, 'year': date, 'share_price': value})
-            else:
-                data.append({'ticker': ticker, 'year': None, 'share_price': None})
-        except Exception as e:
-            data.append({'ticker': ticker, 'year': None, 'share_price': None})
-    df = pd.DataFrame(data)
-    df.set_index(['ticker', 'year'], inplace=True)
+    hist = stock.history(start=start, end=end)
 
-    return df
+    if hist.empty:
+        return None
+
+    hist.index = hist.index.tz_localize(None)  # remove timezone
+    hist['diff'] = np.abs(hist.index - target_date)
+    closest_row = hist.loc[hist['diff'].idxmin()]
+    return closest_row['Close']
+
+def get_fiscal_dates_and_years(category_cache, priority=("financials", "balancesheet", "cashflow")):
+    '''
+    :param category_cache:
+    :param priority:
+    :return:    set: years found in available data
+                dict: {year: fiscal_date}
+    '''
+
+    fiscal_date_by_year = {}
+    years_seen = set()
+
+    for category in priority:
+        df_cat = category_cache.get(category)
+        if df_cat.empty:
+            continue
+        for col in df_cat.columns:
+            col_date = pd.to_datetime(col, errors="coerce")
+            if pd.isna(col_date):
+                continue
+            year = col_date.year
+            if year not in fiscal_date_by_year:
+                fiscal_date_by_year[year] = col_date
+                years_seen.add(year)
+
+    return years_seen, fiscal_date_by_year
