@@ -1,21 +1,10 @@
-from scripts.fetch_data import get_financial_data
+from scripts.fetch_data import get_financial_data, check_ticker_data
 from scripts.db_manager import init_db, insert_data
 from scripts.dcf_model import run_dcf
+from scripts.config import TICKERS, TICKER, GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH, YEARS, DB_PATH
 
-import pandas as pd
 from datetime import datetime
-
-# List of tickers to analyze
-TICKERS = ['BALD-B.ST','SAGA-B.ST', 'CORE-B.ST', 'SBB-B.ST']
-TICKER = 'BALD-B.ST'  # Example ticker
-
-# DCF Assumptions (For simplicity, these are hardcoded)
-GROWTH_RATE = 0.05          # 5% annual growth
-DISCOUNT_RATE = 0.10        # 10% discount rate (WACC - Weighted Average Cost of Capital)
-TERMINAL_GROWTH = 0.02      # 2% perpetual growth
-
-# Database file location
-DB_PATH = 'db/dcf.db'
+import pandas as pd
 
 # ----- Main -----
 def main():
@@ -44,9 +33,12 @@ def test():
     #df = get_financial_data(TICKERS)
     #df.to_csv(r"..\data\data.csv")
     df = pd.read_csv(r"..\data\data.csv", index_col=['ticker', 'year'])
-    print("Test data fetched successfully.")
+    #print("Test data fetched successfully.")
+    #print(check_ticker_data('SAGA-B.ST', 'financials'))
+    dcf_df, prices = run_dcf(df, GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH, YEARS)
+    print(dcf_df)
+    print(prices)
 
-    run_dcf(df.loc['BALD-B.ST'], GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH)
     print("Exiting test function...")
     exit()
 

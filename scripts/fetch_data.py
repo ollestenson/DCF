@@ -1,39 +1,19 @@
 from datetime import datetime, timedelta
+from scripts.config import FETCH_CONFIG
 
 import yfinance as yf
 import pandas as pd
 import numpy as np
 
-# Fetches the config + share_price at fiscal date
-fetch_config = {
-    'cashflow': {
-        'Free Cash Flow': 'fcf'
-    },
-    'balancesheet': {
-        'Long Term Debt': 'long_term_debt',
-        'Short Term Debt': 'short_term_debt'
-    },
-    'financials': {
-        'Income Tax Expense': 'tax_expense',
-        'Ebit': 'ebit',
-        'Interest Expense': 'interest_expense'
-    },
-    'info': {
-        #'sharesOutstanding': 'shares_outstanding',
-        'impliedSharesOutstanding': 'shares_outstanding',
-        'marketCap': 'market_cap',
-        'beta': 'beta'
-    },
-    'custom': {
-        'share_price': 'share_price'
-    }
-
-}
+def check_ticker_data (ticker, category):
+    stock = yf.Ticker(ticker)
+    data = getattr(stock, category, pd.DataFrame())
+    print(data)
 
 def get_financial_data(tickers, config=None):
 
     if config is None:
-        config = fetch_config
+        config = FETCH_CONFIG
 
     data = []
 
