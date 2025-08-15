@@ -1,7 +1,7 @@
 from scripts.fetch_data import get_financial_data, check_ticker_data
-from scripts.db_manager import init_db, insert_data
+from scripts.db_manager import init_db, insert_data, should_fetch_data, update_last_updated
 from scripts.dcf_model import run_dcf
-from scripts.config import TICKERS, TICKER, GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH, YEARS, DB_PATH
+from scripts.config import TICKERS, TICKER, GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH, YEARS, DB_PATH, TEST_DB_PATH, REFRESH_DAYS
 
 from datetime import datetime
 import pandas as pd
@@ -9,20 +9,26 @@ import pandas as pd
 # ----- Main -----
 def main():
 
-    test()
+    #test()
 
     print(f"Starting DCF analysis at {datetime.now()}")
 
-    # init_db(DB_PATH)  # Initialize the database (if needed)
-    df = get_financial_data(TICKERS)
-    print("Financial data fetched successfully.")
-    #print(df)
+    engine = init_db(TEST_DB_PATH)
 
-    print("processing DCF for ticker:", TICKER)
-    dcf_df, share_price = run_dcf(df.loc[TICKER], GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH)
-    print(dcf_df)
-    print(share_price)
-    # insert_data(dcf_df, db)  # Insert data into the database
+    if should_fetch_data(engine, 'financial_data', REFRESH_DAYS):
+        print("Fetching new data...")
+        df = get_financial_data(TICKERS)
+        print("Inserting new data to database...")
+        insert_data(engine, df, 'financial_data')
+        print("Data inserted successfully")
+        update_last_updated(engine, 'financial_data')
+    else:
+        print("Data is up to date - fetching from database")
+        df = pd.read_sql("SELECT * FROM financial_data", engine, index_col=["ticker", "year"])
+
+
+    print(df)
+
 
 
 def test():
@@ -30,14 +36,28 @@ def test():
     Test function to verify program without running the full DCF analysis.
     """
     print("Running test function...")
-    #df = get_financial_data(TICKERS)
+    #engine = init_db(TEST_DB_PATH)
     #df.to_csv(r"..\data\data.csv")
-    df = pd.read_csv(r"..\data\data.csv", index_col=['ticker', 'year'])
+    #df = pd.read_csv(r"..\data\data.csv", index_col=['ticker', 'year'])
+    #insert_data(engine, df, 'financial_data')
     #print("Test data fetched successfully.")
     #print(check_ticker_data('SAGA-B.ST', 'financials'))
-    dcf_df, prices = run_dcf(df, GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH, YEARS)
-    print(dcf_df)
-    print(prices)
+    #dcf_df, prices = run_dcf(df, GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH, YEARS)
+    #insert_data(engine, dcf_df, 'dcf_results')
+    #print(dcf_df)
+    #print(prices)
+
+    engine = init_db(TEST_DB_PATH)
+
+    if should_fetch_data(engine, 'financial_data', REFRESH_DAYS):
+        df = get_financial_data(TICKERS)
+        insert_data(engine, df, 'financial_data')
+        update_last_updated(engine, 'financial_data')
+    else:
+        print("Data is up to date - fetching from database")
+        df = pd.read_sql("SELECT * FROM financial_data", engine, index_col=["ticker", "year"])
+
+    print(df)
 
     print("Exiting test function...")
     exit()

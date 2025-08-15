@@ -2,6 +2,8 @@
 TICKERS = ['BALD-B.ST','SAGA-B.ST', 'CORE-B.ST', 'SBB-B.ST']
 TICKER = 'BALD-B.ST'  # Example ticker
 
+REFRESH_DAYS = 7
+
 GROWTH_RATE = 0.05          # 5% annual growth
 DISCOUNT_RATE = 0.10        # 10% discount rate (If not calculating WACC)
 TERMINAL_GROWTH = 0.02      # 2% perpetual growth
@@ -12,7 +14,8 @@ RISK_FREE_RETURN = 0.025
 MARKET_RETURN = 0.08
 
 # Database file location
-DB_PATH = 'db/dcf.db'
+DB_PATH = r"../db/dcf.db"
+TEST_DB_PATH = r"../db/test_dcf.db"
 
 # Fetches the config + share_price at fiscal date
 FETCH_CONFIG = {

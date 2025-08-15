@@ -10,6 +10,7 @@ def run_dcf(df, growth_rate, discount_rate, terminal_growth, years) -> (pd.DataF
 
     all_dcf = []
     all_prices = {}
+    results = {}
 
     for ticker in tickers:
         ticker_df = df.loc[ticker]
@@ -20,9 +21,10 @@ def run_dcf(df, growth_rate, discount_rate, terminal_growth, years) -> (pd.DataF
 
         all_dcf.append(ticker_dcf)
         all_prices[ticker] = share_price
+        results[ticker] = [df.index[0], ticker_dcf['']]
 
     dcf_df = pd.concat(all_dcf)
-    return dcf_df, all_prices
+    return dcf_df, results
 
 def calculate_dcf(df, growth_rate, discount_rate, terminal_growth, years=5) -> (pd.DataFrame, float):
     start_year = df.index[0] + 1
@@ -58,7 +60,6 @@ def calculate_wacc(df, rf, rm, default_discount_rate):
     tax_rate = tax_rate
     requity = rf + beta * (rm - rf)  - CAPM
     '''
-    print("Calculating WACC")
     equity = df.iloc[0]['market_cap']
     debt = df.iloc[0]['total_debt']
     rdebt = df.iloc[0]['interest_expense'] / debt
