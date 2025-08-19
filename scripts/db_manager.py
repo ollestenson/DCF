@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Table, Column, Integer, String, Float, MetaData, DateTime, text, inspect
+from sqlalchemy import create_engine, Table, Column, Integer, String, Float, MetaData, DateTime, text, inspect, select
 from datetime import datetime, timezone, timedelta
 import pandas as pd
 
@@ -68,8 +68,6 @@ def insert_data(engine, df, table_name):
     """
     print(f"inserting data in table: {table_name}")
     df.to_sql(name=table_name, con=engine, if_exists='replace', index=True)
-    # Here you would implement the actual database insertion logic
-    # For example, using SQLAlchemy or any other database library
     return
 
 def get_last_updated(engine, table_name):
@@ -95,9 +93,11 @@ def update_last_updated(engine, table_name):
     return
 
 def should_fetch_data(engine, tickers, table_name, max_days):
-    inspector = inspect(engine)
+    existing_tickers = get_column_values(engine, table_name, "ticker")
+    print(existing_tickers)
+    print(tickers)
     for ticker in tickers:
-        if not ticker in inspector.get_columns(table_name):
+        if not ticker in existing_tickers:
             return True
     last = get_last_updated(engine, table_name)
     if last is None or pd.isna(last):
@@ -106,5 +106,17 @@ def should_fetch_data(engine, tickers, table_name, max_days):
         last = last.replace(tzinfo=timezone.utc)
     return datetime.now(timezone.utc) - last > timedelta(days=max_days)
 
+def get_column_values(engine, table_name, column_name):
+    """
+    Returns a list of all values in a specific column.
+    """
+    metadata = MetaData()
+    table = Table(table_name, metadata, autoload_with=engine)
 
+    with engine.connect() as conn:
+        stmt = select(getattr(table.c, column_name))
+        results = conn.execute(stmt).fetchall()
+        print(results)
+        # fetchall() returns a list of tuples, extract values
+        return [r[0] for r in results]
 
