@@ -1,6 +1,5 @@
 # List of tickers to analyze
-TICKERS = ['BALD-B.ST','SAGA-B.ST', 'CORE-B.ST', 'SBB-B.ST']
-TICKER = 'BALD-B.ST'  # Example ticker
+TICKERS = ['BALD-B.ST','CORE-B.ST', 'SAGA-B.ST', 'INVE-B.ST','VOLV-B.ST']
 
 REFRESH_DAYS = 7
 

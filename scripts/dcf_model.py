@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-
+from datetime import datetime
 from scripts.config import RISK_FREE_RETURN, MARKET_RETURN
 
 def run_dcf(df, growth_rate, discount_rate, terminal_growth, years) -> (pd.DataFrame, float):
@@ -9,7 +9,6 @@ def run_dcf(df, growth_rate, discount_rate, terminal_growth, years) -> (pd.DataF
     tickers = df.index.get_level_values('ticker').unique()
 
     all_dcf = []
-    all_prices = {}
     results = {}
 
     for ticker in tickers:
@@ -20,11 +19,14 @@ def run_dcf(df, growth_rate, discount_rate, terminal_growth, years) -> (pd.DataF
         ticker_dcf.index = pd.MultiIndex.from_product([[ticker], ticker_dcf.index], names=["ticker", "year"])
 
         all_dcf.append(ticker_dcf)
-        all_prices[ticker] = share_price
-        results[ticker] = [df.index[0], ticker_dcf['']]
+        margin_of_safety =  ((share_price - ticker_df['share_price'].iloc[0]) / share_price) * 100
+        results[ticker] = [datetime.now(), ticker_df['share_price'].iloc[0], share_price, margin_of_safety]
 
+    print(results)
+    results_df = pd.DataFrame.from_dict(results, orient="index", columns=["date", "share_price", "estimated_price", "margin_of_safety"])
+    print(results_df)
     dcf_df = pd.concat(all_dcf)
-    return dcf_df, results
+    return dcf_df, results_df
 
 def calculate_dcf(df, growth_rate, discount_rate, terminal_growth, years=5) -> (pd.DataFrame, float):
     start_year = df.index[0] + 1

@@ -1,10 +1,11 @@
 from scripts.fetch_data import get_financial_data, check_ticker_data
 from scripts.db_manager import init_db, insert_data, should_fetch_data, update_last_updated
 from scripts.dcf_model import run_dcf
-from scripts.config import TICKERS, TICKER, GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH, YEARS, DB_PATH, TEST_DB_PATH, REFRESH_DAYS
+from scripts.config import TICKERS, GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH, YEARS, DB_PATH, TEST_DB_PATH, REFRESH_DAYS
 
 from datetime import datetime
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # ----- Main -----
 def main():
@@ -13,23 +14,23 @@ def main():
 
     print(f"Starting DCF analysis at {datetime.now()}")
 
-    engine = init_db(TEST_DB_PATH)
+    engine = init_db(DB_PATH)
 
-    if should_fetch_data(engine, 'financial_data', REFRESH_DAYS):
+    if should_fetch_data(engine, TICKERS ,'financial_data', REFRESH_DAYS):
         print("Fetching new data...")
         df = get_financial_data(TICKERS)
-        print("Inserting new data to database...")
         insert_data(engine, df, 'financial_data')
-        print("Data inserted successfully")
         update_last_updated(engine, 'financial_data')
     else:
         print("Data is up to date - fetching from database")
         df = pd.read_sql("SELECT * FROM financial_data", engine, index_col=["ticker", "year"])
 
 
-    print(df)
+    dcf_df, results_df = run_dcf(df, GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH, YEARS)
+    insert_data(engine, dcf_df, 'dcf_table')
+    insert_data(engine, results_df, 'results_table')
 
-
+    plot_results(results_df)
 
 def test():
     """
@@ -61,6 +62,23 @@ def test():
 
     print("Exiting test function...")
     exit()
+
+def plot_results(df):
+    plt.figure(figsize=(10,6))
+
+    # plot actual vs estimated share prices
+    plt.plot(df.index, df["share_price"], marker="o", label="Share Price")
+    plt.plot(df.index, df["estimated_price"], marker="s", label="Estimated Price")
+
+    # add margin of safety as bar chart (optional)
+    plt.bar(df.index, df["margin_of_safety"], alpha=0.3, label="Margin of Safety")
+
+    plt.title("Stock Valuation Results")
+    plt.xlabel("Ticker")
+    plt.ylabel("Price")
+    plt.legend()
+    plt.grid(True, linestyle="--", alpha=0.5)
+    plt.show()
 
 if __name__ == "__main__":
     main()

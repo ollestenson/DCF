@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Table, Column, Integer, String, Float, MetaData, DateTime, text
+from sqlalchemy import create_engine, Table, Column, Integer, String, Float, MetaData, DateTime, text, inspect
 from datetime import datetime, timezone, timedelta
 import pandas as pd
 
@@ -29,7 +29,7 @@ def init_db(db_path):
 
     # Table 2: DCF
     dcf_table = Table(
-        "dcf_results",
+        "dcf_table",
         metadata,
         Column("ticker", String, primary_key=True),
         Column("year", Integer, primary_key=True),
@@ -41,12 +41,13 @@ def init_db(db_path):
 
     # Table 3: Results
     prices = Table(
-        "prices",
+        "results_table",
         metadata,
         Column("ticker", String, primary_key=True),
-        Column("date", String),
+        Column("date", DateTime),
         Column("share_price", Float),
-        Column("estimated_price", Float)
+        Column("estimated_price", Float),
+        Column("margin_of_safety", Float)
     )
 
     # Metadata table
@@ -75,6 +76,8 @@ def get_last_updated(engine, table_name):
     with engine.connect() as conn:
         sql = text("SELECT last_updated FROM data_status WHERE table_name = :name")
         row = conn.execute(sql, {"name":table_name}).fetchone()
+        if row is None:
+            return None
         if row[0] is None:
             return None
         last_updated = row[0]
@@ -91,7 +94,11 @@ def update_last_updated(engine, table_name):
          conn.execute(sql, {"name": table_name, "updated": now_utc})
     return
 
-def should_fetch_data(engine, table_name, max_days):
+def should_fetch_data(engine, tickers, table_name, max_days):
+    inspector = inspect(engine)
+    for ticker in tickers:
+        if not ticker in inspector.get_columns(table_name):
+            return True
     last = get_last_updated(engine, table_name)
     if last is None or pd.isna(last):
         return True
