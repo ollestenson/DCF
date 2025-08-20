@@ -5,11 +5,13 @@ import pandas as pd
 def init_db(db_path):
     """
     Initialize the database connection and create necessary tables.
+    :param db_path: Path to the SQLite database file
+    :return: SQLAlchemy engine object
     """
     print("Initializing database...")
 
-    engine = create_engine(f"sqlite:///{db_path}")
-    metadata = MetaData()
+    engine = create_engine(f"sqlite:///{db_path}")  # SQLite database connection
+    metadata = MetaData()   # Metadata object to hold table definitions
 
     # Table 1: Financial Data
     financial_data = Table(
@@ -40,7 +42,7 @@ def init_db(db_path):
     )
 
     # Table 3: Results
-    prices = Table(
+    results_table = Table(
         "results_table",
         metadata,
         Column("ticker", String, primary_key=True),
@@ -62,61 +64,89 @@ def init_db(db_path):
 
     return engine
 
+# TODO: - Add error handling for database operations
+#       - Fix upsert functionality to update existing rows instead of replacing them
 def insert_data(engine, df, table_name):
     """
     Insert data into the database table.
+    :param engine: SQLAlchemy engine object
+    :param df: DataFrame containing the data to insert
+    :param table_name: Name of the table to insert data into
+    :return: None
     """
     print(f"inserting data in table: {table_name}")
-    df.to_sql(name=table_name, con=engine, if_exists='replace', index=True)
+    df.to_sql(name=table_name, con=engine, if_exists='replace', index=True)   # Replace existing table with new data
     return
 
+# TODO: - Add error handling for database operations
 def get_last_updated(engine, table_name):
-    with engine.connect() as conn:
-        sql = text("SELECT last_updated FROM data_status WHERE table_name = :name")
-        row = conn.execute(sql, {"name":table_name}).fetchone()
-        if row is None:
+    """    Retrieve the last updated timestamp for a specific table.
+    :param engine: SQLAlchemy engine object
+    :param table_name: Name of the table to check
+    :return: Last updated timestamp as a datetime object, or None if not found
+    """
+    with engine.connect() as conn:  # Establish a connection to the database
+        sql = text("SELECT last_updated FROM data_status WHERE table_name = :name") # Parameterized SQL query to prevent SQL injection
+        row = conn.execute(sql, {"name":table_name}).fetchone() # Fetch the first row of the result set
+        if row is None:     # No rows returned
             return None
-        if row[0] is None:
+        if row[0] is None:  # If last_updated is None, return None
             return None
-        last_updated = row[0]
+        last_updated = row[0]   # Extract the last_updated value from the row
         return last_updated if isinstance(last_updated, datetime) else datetime.fromisoformat(last_updated)
 
 
+# TODO: - Add error handling for database operations
 def update_last_updated(engine, table_name):
+    """
+    Update the last updated timestamp for a specific table in the database.
+    :param engine: SQLAlchemy engine object
+    :param table_name: Name of the table to update
+    :return: None
+    """
     print("Updating last_updated")
-    now_utc = datetime.now(timezone.utc)
+    now_utc = datetime.now(timezone.utc)    # Get the current UTC time
     sql = text("""INSERT INTO data_status (table_name, last_updated) 
                   VALUES (:name, :updated) ON CONFLICT (table_name) 
-                  DO UPDATE SET last_updated = :updated""")
-    with engine.begin() as conn:
-         conn.execute(sql, {"name": table_name, "updated": now_utc})
+                  DO UPDATE SET last_updated = :updated""") # Upsert SQL query to insert or update the last_updated timestamp
+    with engine.begin() as conn:    # Begin a transaction
+         conn.execute(sql, {"name": table_name, "updated": now_utc})    # Execute the SQL query with parameters
     return
 
+# TODO: - Add error handling for database operations
 def should_fetch_data(engine, tickers, table_name, max_days):
-    existing_tickers = get_column_values(engine, table_name, "ticker")
-    print(existing_tickers)
-    print(tickers)
+    """
+    Determines whether to fetch new data based on existing tickers and last updated timestamp.
+    :param engine: SQLAlchemy engine object
+    :param tickers: List of tickers to check against existing data
+    :param table_name: Name of the table to check for existing data
+    :param max_days: Maximum number of days since last update to consider fetching new data
+    :return: True if new data should be fetched, False otherwise
+    """
+    existing_tickers = get_column_values(engine, table_name, "ticker")  # Get existing tickers from the specified table
     for ticker in tickers:
         if not ticker in existing_tickers:
             return True
     last = get_last_updated(engine, table_name)
-    if last is None or pd.isna(last):
+    if last is None or pd.isna(last):   # If last updated is None or NaT, fetch new data
         return True
-    if last.tzinfo is None:
-        last = last.replace(tzinfo=timezone.utc)
+    if last.tzinfo is None:  # If last updated timestamp is naive (no timezone info), assume it's in UTC
+        last = last.replace(tzinfo=timezone.utc)    # Convert to UTC timezone
     return datetime.now(timezone.utc) - last > timedelta(days=max_days)
 
 def get_column_values(engine, table_name, column_name):
     """
     Returns a list of all values in a specific column.
+    :param engine: SQLAlchemy engine object
+    :param table_name: Name of the table to query
+    :param column_name: Name of the column to retrieve values from
+    :return: List of values in the specified column
     """
-    metadata = MetaData()
-    table = Table(table_name, metadata, autoload_with=engine)
+    metadata = MetaData()   # Metadata object to hold table definitions
+    table = Table(table_name, metadata, autoload_with=engine)   # Load the table definition from the database
 
-    with engine.connect() as conn:
-        stmt = select(getattr(table.c, column_name))
-        results = conn.execute(stmt).fetchall()
-        print(results)
-        # fetchall() returns a list of tuples, extract values
-        return [r[0] for r in results]
+    with engine.connect() as conn:  # Establish a connection to the database
+        stmt = select(getattr(table.c, column_name))    # Create a select statement to retrieve the specified column
+        results = conn.execute(stmt).fetchall()     # Execute the statement and fetch all results
+        return [r[0] for r in results]  # Convert results to a list of values
 

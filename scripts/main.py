@@ -9,6 +9,11 @@ import matplotlib.pyplot as plt
 
 # ----- Main -----
 def main():
+    """
+    Main function to run the DCF analysis.
+    This function initializes the database, fetches financial data, runs the DCF model,
+    and plots the results.
+    """
 
     #test()
 
@@ -16,19 +21,20 @@ def main():
 
     engine = init_db(DB_PATH)
 
+    # Fetches financial data if needed, else retrieves from database
     if should_fetch_data(engine, TICKERS ,'financial_data', REFRESH_DAYS):
         print("Fetching new data...")
-        df = get_financial_data(TICKERS)
-        insert_data(engine, df, 'financial_data')
-        update_last_updated(engine, 'financial_data')
+        df = get_financial_data(TICKERS)                              # Fetch financial data for the tickers
+        insert_data(engine, df, 'financial_data')           # Insert data into the financial_data table
+        update_last_updated(engine, 'financial_data')       # Update last updated timestamp
     else:
         print("Data is up to date - fetching from database")
-        df = pd.read_sql("SELECT * FROM financial_data", engine, index_col=["ticker", "year"])
+        df = pd.read_sql("SELECT * FROM financial_data", engine, index_col=["ticker", "year"])  # Read data from the financial_data table
 
 
-    dcf_df, results_df = run_dcf(df, GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH, YEARS)
-    insert_data(engine, dcf_df, 'dcf_table')
-    insert_data(engine, results_df, 'results_table')
+    dcf_df, results_df = run_dcf(df, GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH, YEARS)    # Run DCF analysis
+    insert_data(engine, dcf_df, 'dcf_table')            # Insert DCF results into the dcf_table
+    insert_data(engine, results_df, 'results_table')    # Insert results into the results_table
 
     plot_results(results_df)
 
@@ -42,6 +48,10 @@ def test():
     exit()
 
 def plot_results(df):
+    """
+    Plots the results of the DCF analysis.
+    :param df: DataFrame containing the results with columns ['share_price', 'estimated_price', 'margin_of_safety']
+    """
     plt.figure(figsize=(10,6))
 
     plt.plot(df.index, df["share_price"], marker="o", label="Share Price")
