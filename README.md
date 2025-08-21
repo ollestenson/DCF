@@ -1,8 +1,8 @@
 # DCF
 A simple DCF model created with Python and SQL. 
 
-Intended for learning and not practical use. Serves as a beginner-friendly project to gain 
-experience.
+Intended for learning and not practical use. It serves as a beginner-friendly project to gain 
+hands-on experience with building financial models.
 It does not delve deep into financial theory or advanced DCF forecasts.
 
 
