@@ -1,4 +1,5 @@
 from sqlalchemy import create_engine, Table, Column, Integer, String, Float, MetaData, DateTime, text, inspect, select
+from sqlalchemy.dialects.sqlite import insert
 from datetime import datetime, timezone, timedelta
 import pandas as pd
 
@@ -65,7 +66,6 @@ def init_db(db_path):
     return engine
 
 # TODO: - Add error handling for database operations
-#       - Fix upsert functionality to update existing rows instead of replacing them
 def insert_data(engine, df, table_name):
     """
     Insert data into the database table.
@@ -76,6 +76,28 @@ def insert_data(engine, df, table_name):
     """
     print(f"inserting data in table: {table_name}")
     df.to_sql(name=table_name, con=engine, if_exists='replace', index=True)   # Replace existing table with new data
+    return
+
+def upsert_data(engine, df, table_name, keys):
+    """
+    Upsert data into the database table, updating existing rows based on specified keys.
+    :param engine: SQLAlchemy engine object
+    :param df: DataFrame containing the data to upsert
+    :param table_name: Name of the table to upsert data into
+    :param keys: List of column names to use as keys for upserting
+    :return:
+    """
+    metadata = MetaData()  # Metadata object to hold table definitions
+    table = Table(table_name, metadata, autoload_with=engine)  # Load the table definition from the database
+
+    df = df.reset_index()  # Reset index to ensure 'ticker' and 'year' are columns
+    rows = df.to_dict(orient="records")  # Convert DataFrame to a list of dictionaries for insertion
+    stmt = insert(table).values(rows)   # Create an insert statement with the rows to be inserted
+    update_dict = {c.key: c for c in stmt.excluded if c.key not in keys}    # Create a dictionary of columns to update if a conflict occurs
+    stmt = stmt.on_conflict_do_update(index_elements=keys, set_=update_dict)    # Handle conflicts by updating existing rows based on the specified keys
+
+    with engine.begin() as conn:
+        conn.execute(stmt)  # Execute the upsert statement within a transaction
     return
 
 # TODO: - Add error handling for database operations

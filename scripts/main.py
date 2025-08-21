@@ -1,5 +1,5 @@
 from scripts.fetch_data import get_financial_data, check_ticker_data
-from scripts.db_manager import init_db, insert_data, should_fetch_data, update_last_updated
+from scripts.db_manager import init_db, insert_data, should_fetch_data, update_last_updated, upsert_data
 from scripts.dcf_model import run_dcf
 from scripts.config import TICKERS, GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH, YEARS, DB_PATH, TEST_DB_PATH, REFRESH_DAYS
 
@@ -25,7 +25,8 @@ def main():
     if should_fetch_data(engine, TICKERS ,'financial_data', REFRESH_DAYS):
         print("Fetching new data...")
         df = get_financial_data(TICKERS)                              # Fetch financial data for the tickers
-        insert_data(engine, df, 'financial_data')           # Insert data into the financial_data table
+        #insert_data(engine, df, 'financial_data')
+        upsert_data(engine, df, 'financial_data', ['ticker', 'year'])  # Upsert financial data into the financial_data table
         update_last_updated(engine, 'financial_data')       # Update last updated timestamp
     else:
         print("Data is up to date - fetching from database")

@@ -104,7 +104,7 @@ def get_fiscal_dates_and_years(category_cache, priority=("financials", "balances
         - Set of years seen in the fiscal data.
         - Dictionary mapping years to their corresponding fiscal date.
     """
-    fiscal_date_by_year = {}
+    fiscal_date_by_year = {}    # Dictionary to store fiscal dates by year
     years_seen = set()
 
     for category in priority:
@@ -113,12 +113,12 @@ def get_fiscal_dates_and_years(category_cache, priority=("financials", "balances
             continue
         for col in df_cat.columns:  # Iterate through each column in the category DataFrame
             col_date = pd.to_datetime(col, errors="coerce") # Convert the column name to a datetime object, coercing errors to NaT
-            if pd.isna(col_date):
+            if pd.isna(col_date):   # If the column date is NaT (not a valid date), skip to the next column
                 continue
-            year = col_date.year
-            if year not in fiscal_date_by_year:
-                fiscal_date_by_year[year] = col_date
-                years_seen.add(year)
+            year = col_date.year    # Extract the year from the column date
+            if year not in fiscal_date_by_year: # If the year is not already in the fiscal_date_by_year dictionary
+                fiscal_date_by_year[year] = col_date    # Assign the column date to the year in the dictionary
+                years_seen.add(year) # Add the year to the set of years seen
 
     return years_seen, fiscal_date_by_year
 
