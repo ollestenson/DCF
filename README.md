@@ -49,6 +49,7 @@ cash flows would be better.
 
 #### Discount Rate: $r$ 
 WACC is used as the discount rate ($r$). The following formula is used:
+
 $$
 WACC = \left( r_{debt} \times (1 - TaxRate) \times \frac{Debt}{Equity + Debt} \right) + \left( r_{equity} \times \frac{Equity}{Equity + Debt} \right)
 $$
@@ -63,6 +64,7 @@ Where:
 The model also sets a WACC floor of $8\%$ to prevent overvaluation of companies. 
 If data to calculate WACC is missing the model will default to a $10\%$ discount rate.
 Worth noting here is that the $r_{equity}$ is calculated using the CAPM (Capital Asset Pricing Model)
+
 $$
     r_{equity} = r_f + \beta * (r_m-r_f)
 $$
@@ -80,6 +82,7 @@ a DCF.
 The terminal value ($TV$) estimates the value of a company beyond the forecast period ($n$). It assumes a steady growth rate for 
 cash flow for an indefinite amount of time. In the DCF formula it is then discounted back to present value.
 $TV$ is calculated using the perpetuity formula (also called the Gordon Growth method): 
+
 $$
     TV = \frac{FCF_n \times (1 + g)}{r - g} 
 $$
