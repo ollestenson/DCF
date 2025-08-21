@@ -43,7 +43,7 @@ Essentially what this formula is doing is estimating the value of a company by
 summing the present value of estimated future cash flows plus the value beyond the forecast period. 
 
 #### Free Cash Flow: $FCF_t$
-The estimation of $FCF_t$ for this model is simple. A $5\%$ annual growth is used with the last yearly report free cash flow as base. 
+The estimation of $FCF_t$ for this model is simple. A $5$% annual growth is used with the last yearly report free cash flow as base. 
 Here major improvements can be done with a more accurate estimation of annual growth. An indivudal growth estimate per company by looking at previous
 cash flows would be better.
 
@@ -61,8 +61,8 @@ Where:
 - $Equity$ is the total equity  
 - $TaxRate$ is the corporate tax rate.
 
-The model also sets a WACC floor of $8\%$ to prevent overvaluation of companies. 
-If data to calculate WACC is missing the model will default to a $10\%$ discount rate.
+The model also sets a WACC floor of $8$% to prevent overvaluation of companies. 
+If data to calculate WACC is missing the model will default to a $10$% discount rate.
 Worth noting here is that the $r_{equity}$ is calculated using the CAPM (Capital Asset Pricing Model)
 
 $$
@@ -70,9 +70,9 @@ $$
 $$
 
 Where:
-- $r_f$ is the risk free rate (assumed to be $2.5\%$)
+- $r_f$ is the risk free rate (assumed to be $2.5$%)
 - $\beta$ is the beta of the stock (measure of the companies volatility relative to the stock market)
-- $r_m$ is the expected market return (based on historic performance of the swedish market - assumed to be $8\%$) 
+- $r_m$ is the expected market return (based on historic performance of the swedish market - assumed to be $8$%) 
 
 #### Time Horizon: $n$
 For simplicity this model sets a time horizon of five years. Research has not been done on how many years is optimal for
@@ -90,5 +90,5 @@ $$
 Where:
 - $FCF_n$ is the free cash flow for year $n$
 - $g$ is the terminal growth rate i.e. growth rate for the company as it is assumed to generate cash flows for forever 
-(assumed to be $2%$)
+(assumed to be $2$%)
 - $r$ is the discount rate i.e. WACC.
