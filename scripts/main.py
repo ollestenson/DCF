@@ -31,8 +31,9 @@ def main():
         update_last_updated(engine, 'financial_data')       # Update last updated timestamp
     else:
         print("Data is up to date - fetching from database")
-        df = pd.read_sql("SELECT * FROM financial_data", engine, index_col=["ticker", "year"])  # Read data from the financial_data table
-
+        placeholders = ', '.join(['?'] * len(TICKERS))  # Create placeholders for the SQL query
+        sql = f"SELECT * FROM financial_data WHERE ticker IN ({placeholders}) ORDER BY ticker ASC, year DESC"   # SQL query to select financial data for the specified tickers
+        df = pd.read_sql(sql, engine, params=tuple(TICKERS), index_col=["ticker", "year"])  # Read data from the financial_data table
 
     dcf_df, results_df = run_dcf(df, GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH, YEARS)    # Run DCF analysis
     insert_data(engine, dcf_df, 'dcf_table')            # Insert DCF results into the dcf_table
