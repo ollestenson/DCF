@@ -26,6 +26,20 @@ This program is currently in development. The following features are implemented
 - [ ] Unit tests
 - [ ] Deployment instructions
 
+## Running the Program
+Go into the config.py and enter the tickers you want to analyze, i.e. ```bash
+py -m pip install -r requirements.txt
+```bash
+TICKERS = ['BALD-B.ST', 'CORE-B.ST', 'SAGA-B.ST', 'CAST.ST'].
+```
+Optional to tweak the different parameters here too.
+
+Run main.py and a chart will be plotted with the estimated share price, market share price and the margin of safety:
+
+$$
+    ![DCF Chart](../data/example_plot.png)
+$$
+
 ## Calculations / Methodology
 The DCF model is based on the following formula for calculating the estimated value of a company:
 

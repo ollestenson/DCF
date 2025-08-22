@@ -6,6 +6,7 @@ from scripts.config import TICKERS, GROWTH_RATE, DISCOUNT_RATE, TERMINAL_GROWTH,
 from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 # ----- Main -----
 def main():
@@ -53,18 +54,35 @@ def plot_results(df):
     Plots the results of the DCF analysis.
     :param df: DataFrame containing the results with columns ['share_price', 'estimated_price', 'margin_of_safety']
     """
-    plt.figure(figsize=(10,6))
+    x = np.arange(len(df.index))  # Numerical positions for tickers
+    width = 0.35
 
-    plt.plot(df.index, df["share_price"], marker="o", label="Share Price")
-    plt.plot(df.index, df["estimated_price"], marker="s", label="Estimated Price")
+    plt.figure(figsize=(12, 6))
+    plt.bar(x - width / 2, df["share_price"], width, label="Share Price")
+    plt.bar(x + width / 2, df["estimated_price"], width, label="Estimated Price")
 
-    plt.bar(df.index, df["margin_of_safety"], alpha=0.3, label="Margin of Safety")
+    # Annotate Share Price bars
+    for i, v in enumerate(df["share_price"]):
+        plt.text(i - width / 2, v + 1, f"{v:.1f} SEK", ha="center", va="bottom", fontsize=8)
 
-    plt.title("Stock Valuation Results")
-    plt.xlabel("Ticker")
+    # Annotate Estimated Price bars
+    for i, v in enumerate(df["estimated_price"]):
+        plt.text(i + width / 2, v + 1, f"{v:.1f} SEK", ha="center", va="bottom", fontsize=8)
+
+    # Optional: add margin of safety as text above bars
+    for i, v in enumerate(df["margin_of_safety"]):
+        plt.text(i, max(df["share_price"].iloc[i], df["estimated_price"].iloc[i]) + 12,
+                 f"{v:.1f}%", ha="center", va="bottom")
+
+    ymax = max(df["share_price"].max(), df["estimated_price"].max())
+    plt.ylim(0, ymax * 1.1)  # 10% padding
+
+    plt.xticks(x, df.index, rotation=45, ha="right")
     plt.ylabel("Price")
+    plt.title("DCF vs Market Price by Ticker")
     plt.legend()
-    plt.grid(True, linestyle="--", alpha=0.5)
+
+    plt.tight_layout()
     plt.show()
 
 if __name__ == "__main__":

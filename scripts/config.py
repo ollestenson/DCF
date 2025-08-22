@@ -1,7 +1,5 @@
 # List of tickers to analyze
-#TICKERS = ['SAGA-B.ST', 'INVE-B.ST','VOLV-B.ST']
-#TICKERS = ['BALD-B.ST','CORE-B.ST', 'SAGA-B.ST']
-TICKERS = ['SAGA-B.ST', 'INVE-B.ST', 'VOLV-B.ST', 'BALD-B.ST', 'CORE-B.ST']
+TICKERS = ['BALD-B.ST', 'CORE-B.ST', 'SAGA-B.ST', 'CAST.ST']
 REFRESH_DAYS = 7
 
 GROWTH_RATE = 0.05          # 5% annual growth
