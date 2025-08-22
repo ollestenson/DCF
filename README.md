@@ -37,6 +37,7 @@ This program is currently in development. The following features are implemented
 
 - [ ] User interface for inputting data
 - [ ] More advanced DCF calculations
+- [ ] Improved database handling
 - [ ] Error handling and validation
 - [ ] Unit tests
 - [ ] Deployment instructions
