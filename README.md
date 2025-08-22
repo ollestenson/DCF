@@ -5,6 +5,11 @@ Intended for learning and not practical use. It serves as a beginner-friendly pr
 hands-on experience with building financial models.
 It does not delve deep into financial theory or advanced DCF forecasts.
 
+## Program Overview
+- **Configuration:** Load stock tickers and DCF parameters from config.py.
+- **Data retrieval:** If fresh data exists in the database, fetch it; else fetch data from the Yahoo Finance and insert in database.
+- **DCF calculation:** Perfrom DCF analysis for ticker. Store both calculated cash flows and valuation results in respective database.
+- **Visualisation:** Plot results i.e. ticker, share price, estimated share price, and margin of safety.
 
 ## Installation
 Install the required Python libraries by running:
@@ -12,6 +17,16 @@ Install the required Python libraries by running:
 ```bash
 py -m pip install -r requirements.txt
 ```
+
+## Running the Program
+Go into the config.py and enter the tickers you want to analyze, i.e.
+```bash
+TICKERS = ['BALD-B.ST', 'CORE-B.ST', 'SAGA-B.ST', 'CAST.ST'].
+```
+You can optionally tweak the parameters. Running main.py will plot a chart showing the estimated share price, the market share price, and the margin of safety.
+
+<img src="data/example_plot.png" alt="DCF Chart" width="400">
+
 
 ## Current Status:
 This program is currently in development. The following features are implemented:
@@ -25,15 +40,6 @@ This program is currently in development. The following features are implemented
 - [ ] Error handling and validation
 - [ ] Unit tests
 - [ ] Deployment instructions
-
-## Running the Program
-Go into the config.py and enter the tickers you want to analyze, i.e.
-```bash
-TICKERS = ['BALD-B.ST', 'CORE-B.ST', 'SAGA-B.ST', 'CAST.ST'].
-```
-You can optionally tweak the parameters. Running main.py will plot a chart showing the estimated share price, the market share price, and the margin of safety.
-
-<img src="data/example_plot.png" alt="DCF Chart" width="400">
 
 
 ## Calculations / Methodology
