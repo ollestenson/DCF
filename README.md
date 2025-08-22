@@ -35,7 +35,7 @@ Optional to tweak the different parameters here too.
 
 Run main.py and a chart will be plotted with the estimated share price, market share price and the margin of safety:
 
-![DCF Chart](../data/example_plot.png)
+![DCF Chart](data/example_plot.png)
 
 
 ## Calculations / Methodology
