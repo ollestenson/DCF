@@ -31,9 +31,7 @@ Go into the config.py and enter the tickers you want to analyze, i.e.
 ```bash
 TICKERS = ['BALD-B.ST', 'CORE-B.ST', 'SAGA-B.ST', 'CAST.ST'].
 ```
-Optional to tweak the different parameters here too.
-
-Run main.py and a chart will be plotted with the estimated share price, market share price and the margin of safety:
+You can optionally tweak the parameters. Running main.py will plot a chart showing the estimated share price, the market share price, and the margin of safety.
 
 <img src="data/example_plot.png" alt="DCF Chart" width="400">
 
