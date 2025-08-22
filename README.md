@@ -5,7 +5,7 @@ Intended for learning and not practical use. It serves as a beginner-friendly pr
 hands-on experience with building financial models.
 It does not delve deep into financial theory or advanced DCF forecasts.
 
-## Program Overview
+## Program Overview (main.py)
 - **Configuration:** Load stock tickers and DCF parameters from config.py.
 - **Data retrieval:** If fresh data exists in the database, fetch it; else fetch data from the Yahoo Finance and insert in database.
 - **DCF calculation:** Perfrom DCF analysis for ticker. Store both calculated cash flows and valuation results in respective database.
